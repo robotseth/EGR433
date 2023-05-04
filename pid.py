@@ -1,40 +1,30 @@
-from serial_communication import Qube #read_encoders, set_motor, set_led_color
+from qube_control import *
 from simple_pid import PID
-import time
 import sys
 
-# TODO:
-# live graph of encoders | Not possible when remoting into the raspberry pi
-# nested pid loops | the horizontal encoder is very diffifult to use because it wraps over instead of going negative. Probably a binary overflow error of some kind :(
-
-
-# Creates a Qube object
-qube = Qube
-
 # Initialize PID
-output_limits = (-800,800)
-inner_pid = PID(3.2, 0, .08, setpoint=-10, output_limits=output_limits) # PID loop to keep the arm vertical | PID(2.75, 0, 0.05, setpoint=-10, output_limits=output_limits)
-outer_pid = PID(.1, 0, 0, setpoint=0, output_limits=output_limits) # PID loop to keep the horizontal arm centered
+output_limits = (-800, 800)
+inner_pid = PID(28, 0, .6, setpoint=0, output_limits=output_limits)  # 2, 0, .05
+outer_pid = PID(-.6, 0, -.45, setpoint=0, output_limits=(-300,300))  # .28284/4, 0, .17222/4
 
-# Read SPI packets and parse data
+initialize_qube() # zeros the encoders and then waits for the arm to be lifted vertically
+
+PID_data = open("PID_data_2.txt", "a")
+
+start_time = time.time()
+# Run PID control loop
 while True:
     try:
-        if (qube.read_encoders()[1]-1024) < -15 or (qube.read_encoders()[1]-1024) > 15:
-            qube.set_led_color([255,0,0])
-        else:
-            qube.set_led_color([0,255,0])
-
-        # Compute new output from the PID according to the systems current value
-        inner_val = inner_pid(1024 - qube.read_encoders()[1])
-        outer_val = outer_pid(qube.parse_motor_encoder(qube.read_encoders()[0]))
-        motor_voltage = inner_val*0 + outer_val # inner PID loop zeroed to tune the outer PID
-        #print(motor_voltage)
-        qube.set_motor(int(motor_voltage))
-        # Wait for a short period before updating again
-        time.sleep(0.005)
-        print(f'Outer Encoder: {qube.read_state().encoder0} | Inner Encoder: {qube.read_encoders()[1]-1024}')
-    except KeyboardInterrupt:
-        # quit
-        print('stopping motor...')
+        arm_angle, pen_angle = get_angle() # Pole the current encoder values
+        inner_val = inner_pid(pen_angle) # Compute new output from the PID according to the systems current value
+        outer_val = outer_pid(arm_angle) # Compute new output from the PID according to the systems current value
+        motor_voltage = (outer_val + inner_val) # Sum the control signals to set the motor power
+        set_motor(motor_voltage) # Set the motor power
+        print(motor_voltage)
+        update_led() # Update the LED color depending on the state of the pendulum
+        watch_for_fall() # Check if the pendulum has falled and quit if it has
+        PID_data.write(f'{arm_angle},{pen_angle},{motor_voltage},{(time.time() - start_time)}\n')
+    except KeyboardInterrupt: # Check if the program has been quit
+        print("stopping motor...")
         qube.set_motor(0)
         sys.exit()

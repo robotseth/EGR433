@@ -3,6 +3,7 @@ import sys
 import spidev
 from simple_pid import PID
 import numpy as np
+import struct
 
 class Qube:
     def __init__(self, device_id, encoder0, encoder1, tach0, status, current_sense):
@@ -41,11 +42,23 @@ class Qube:
         encoder_vals = [wrap_number(data.encoder0), wrap_number(data.encoder1)]
         return encoder_vals
     
-    def parse_motor_encoder(encoder_bytes):
+    # Pack the values into a three-byte little-endian packet
+
+    
+    def parse_motor_encoder(): #encoder_bytes
+        """
         if (encoder_bytes & 0x00800000):
             encoder_bytes = encoder_bytes | 0xFF000000
         theta = encoder_bytes * (-2.0 * np.pi / 2048)
         return theta
+        """
+        msg = [0x01, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00]  # Replace with appropriate command or dummy bytes
+        response = spi.xfer2(msg)
+        byte_packet = struct.pack('>BBB', response[2], response[3], response[4])
+        signed_int = struct.unpack('>i', byte_packet + b'\x00')[0]
+        signed_int = int(signed_int/256)
+        return signed_int
+
 
     def parse_arm_encoder(bytes):
         pass
@@ -72,6 +85,16 @@ class Qube:
         b_lsb = color_array[2] & 0xFF
         b_msb = (color_array[2] >> 8) & 0xFF
         Qube.write_spi_data(mask, led=[r_msb,r_lsb,g_msb,g_lsb,b_msb,b_lsb])
+
+    def zero_motor_encoder():
+        mask = 0b01100000
+        Qube.write_spi_data(mask)
+
+    def moving_average_filter(data, window_size):
+        window = np.ones(window_size) / float(window_size)
+        return np.convolve(data, window, 'same')
+
+
 
 def wrap_number(number, min_value=0, max_value=2048):
     """
@@ -111,13 +134,13 @@ def generate_motor_command(speed):
 
     return (1 << 15) | speed
 
-print(f'{format_motor_command(30)}')
-print(f'{format_motor_command(-30)}')
+#print(f'{format_motor_command(30)}')
+#print(f'{format_motor_command(-30)}')
 
 # Initialize SPI interface
 spi = spidev.SpiDev()
 spi.open(0, 0)  # Open SPI bus 0, device 0
-spi.max_speed_hz = 100000  # Set maximum SPI clock speed
+spi.max_speed_hz = 1000000  # Set maximum SPI clock speed
 spi.mode = 2  # Set SPI mode to 0 (CPOL = 0, CPHA = 0)
 
 

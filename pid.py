@@ -19,7 +19,7 @@ start_time = time.time()
 # Run PID control loop
 while True:
     try:
-        arm_angle, pen_angle = get_angle() # Pole the current encoder values
+        arm_angle, pen_angle = get_angle() # Read the current encoder values
         inner_val = inner_pid(pen_angle) # Compute new output from the PID according to the systems current value
         outer_val = outer_pid(arm_angle) # Compute new output from the PID according to the systems current value
         motor_voltage = (outer_val + inner_val) # Sum the control signals to set the motor power

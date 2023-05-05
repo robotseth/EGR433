@@ -1,9 +1,5 @@
-# initialize the spi
-# zero the encoders
-# read encoder values
-# send motor values
-# send led color
-# disable motors and stop program if it falls
+# This program is used to interface with the Qube over SPI. It uses the serial_communication.py functions and makes them a bit cleaner/easier to use.
+# Programmed by Seth Altobelli - Last Updated 5/2/2023
 
 from serial_communication import Qube  # read_encoders, set_motor, set_led_color
 import time
@@ -50,6 +46,6 @@ def set_motor(motor_voltage):
 def watch_for_fall():
     if abs(qube.read_encoders()[1] - 1024) > 800:
         print("")
-        logger.warning("Pendulum fell - Stopping motor...")
+        logger.warning("Pendulum fell - Stopping motor...") 
         qube.set_motor(0)
         return(True)

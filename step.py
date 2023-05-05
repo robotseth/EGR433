@@ -1,3 +1,6 @@
+# This program is used to plot the real-world step response of the Qube.
+# Programmed by Seth Altobelli - Last Updated 5/4/2023
+
 from log import Log
 from qube_control import *
 import time

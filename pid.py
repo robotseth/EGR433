@@ -1,3 +1,6 @@
+# This program is used to implemnt PID control of the Qube using a raspberry pi
+# Programmed by Seth Altobelli - Last Updated 5/4/2023
+
 from qube_control import *
 from log import Log
 from simple_pid import PID
@@ -22,9 +25,9 @@ while True:
         motor_voltage = (outer_val + inner_val) # Sum the control signals to set the motor power
         set_motor(motor_voltage) # Set the motor power
         update_led() # Update the LED color depending on the state of the pendulum
-        datalog.log(data=[pen_angle, arm_angle, motor_voltage, (time.time() - start_time)])
+        #datalog.log(data=[pen_angle, arm_angle, motor_voltage, (time.time() - start_time)])
         if watch_for_fall(): # Check if the pendulum has falled and quit if it has
-            datalog.save()
+            #datalog.save()
             sys.exit()
     except KeyboardInterrupt: # Check if the program has been quit
         print("stopping motor...")

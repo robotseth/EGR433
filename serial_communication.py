@@ -1,3 +1,6 @@
+# This program is used to interface with the Qube over SPI.
+# Programmed by Seth Altobelli - Last Updated 5/2/2023
+
 import time
 import sys
 import spidev

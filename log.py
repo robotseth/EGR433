@@ -1,3 +1,6 @@
+# This program is used to log real time encoder and motor data from the Qube. It saves this data to an svg file with incrimenting numbering.
+# Programmed by Seth Altobelli - Last Updated 5/4/2023
+
 import numpy as np
 import glob
 import os

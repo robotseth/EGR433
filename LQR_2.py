@@ -1,3 +1,6 @@
+# This program is used to attempt LQR control of the Qube using a raspberry pi
+# Programmed by Max Gao - Last Updated 5/4/2023
+
 from qube_control import *
 from log import Log
 import time

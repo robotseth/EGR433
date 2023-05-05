@@ -1,4 +1,5 @@
 from qube_control import *
+from log import Log
 import time
 import sys
 import numpy as np

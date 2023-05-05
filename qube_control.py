@@ -9,18 +9,20 @@ from serial_communication import Qube  # read_encoders, set_motor, set_led_color
 import time
 import sys
 from loguru import logger
+from log import Log
 import numpy as np
 
 # Creates a Qube object
 qube = Qube
 
-def initialize_qube():
+def initialize_qube(wait_for_lift=True):
     qube.zero_motor_encoder()
     # waits for pendulum to be lifted
     # TODO: check for angle instead of waiting a set time
     logger.info("Please lift pendulum")
-    while abs(get_angle()[1]) > 30:
-         time.sleep(0.1)
+    if wait_for_lift:
+        while abs(get_angle()[1]) > 30:
+            time.sleep(0.1)
     logger.info("Initializing Completed - Starting control loop")
 
 def get_angle(type='tics', invert=False):
@@ -50,4 +52,4 @@ def watch_for_fall():
         print("")
         logger.warning("Pendulum fell - Stopping motor...")
         qube.set_motor(0)
-        sys.exit()
+        return(True)

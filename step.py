@@ -9,8 +9,8 @@ initialize_qube(wait_for_lift=False) # zeros the encoders and then waits for the
 start_time = time.time()
 while True:
     try:
-        arm_angle, pen_angle = get_angle() # Pole the current encoder values
-        motor_voltage = 100 # step power
+        arm_angle, pen_angle = get_angle(type='rad') # Pole the current encoder values
+        motor_voltage = 80 # step power
         if time.time() - start_time > .5: # after a half second has passed, input the step
             set_motor(motor_voltage) # Set the motor power
         datalog.log(data=[pen_angle, arm_angle, motor_voltage, (time.time() - start_time)])
